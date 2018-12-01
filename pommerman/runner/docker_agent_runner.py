@@ -3,8 +3,8 @@ import abc
 import logging
 import json
 from .. import constants
-from flask import Flask, jsonify, request
 import numpy as np
+from flask import Flask, jsonify, request
 
 LOGGER = logging.getLogger(__name__)
 
@@ -18,7 +18,6 @@ class DockerAgentRunner(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def act(self, observation, action_space):
         """Given an observation, returns the action the agent should"""
-        
         def featurize(obs):
             
             board = obs['board']
@@ -71,9 +70,6 @@ class DockerAgentRunner(metaclass=abc.ABCMeta):
         
         action = np.argmax(probs)
         return action.item()
-        
-        
-        raise NotImplementedError()
 
     def run(self, host="0.0.0.0", port=10080):
         """Runs the agent by creating a webserver that handles action requests."""
@@ -85,6 +81,15 @@ class DockerAgentRunner(metaclass=abc.ABCMeta):
             data = request.get_json()
             observation = data.get("obs")
             observation = json.loads(observation)
+
+            observation['teammate'] = constants.Item(observation['teammate'])
+            for enemy_id in range(len(observation['enemies'])):
+                observation['enemies'][enemy_id] = constants.Item(observation['enemies'][enemy_id])
+            observation['position'] = tuple(observation['position'])
+            observation['board'] = np.array(observation['board'], dtype=np.uint8)
+            observation['bomb_life'] = np.array(observation['bomb_life'], dtype=np.float64)
+            observation['bomb_blast_strength'] = np.array(observation['bomb_blast_strength'], dtype=np.float64)
+
             action_space = data.get("action_space")
             action_space = json.loads(action_space)
             action = self.act(observation, action_space)
