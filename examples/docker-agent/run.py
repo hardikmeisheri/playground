@@ -4,11 +4,10 @@ from pommerman import agents
 from pommerman.runner import DockerAgentRunner
 
 
-class MyAgent(DockerAgentRunner):
-    '''An example Docker agent class'''
+class MyAgent_with_comm(DockerAgentRunner):
 
     def __init__(self):
-        self._agent = agents.SimpleAgent()
+        self._agent = agents.RL_Agent()
 
     def init_agent(self, id, game_type):
         return self._agent.init_agent(id, game_type)
@@ -25,7 +24,7 @@ class MyAgent(DockerAgentRunner):
 
 def main():
     '''Inits and runs a Docker Agent'''
-    agent = MyAgent()
+    agent = MyAgent_with_comm()
     agent.run()
 
 

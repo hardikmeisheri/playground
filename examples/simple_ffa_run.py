@@ -14,13 +14,14 @@ def main():
     # Create a set of agents (exactly four)
     agent_list = [
         agents.SimpleAgent(),
-        agents.RandomAgent(),
         agents.SimpleAgent(),
-        agents.RandomAgent(),
-        # agents.DockerAgent("pommerman/simple-agent", port=12345),
+        #agents.SimpleAgent(),
+        #agents.SimpleAgent(),
+        agents.DockerAgent("pommerman/rl_agent", port=12367),
+        agents.DockerAgent("pommerman/rl_agent", port=12397),
     ]
     # Make the "Free-For-All" environment using the agent list
-    env = pommerman.make('PommeFFACompetition-v0', agent_list)
+    env = pommerman.make('PommeRadio-v2', agent_list)
 
     # Run the episodes just like OpenAI Gym
     for i_episode in range(1):
