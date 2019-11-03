@@ -6,6 +6,7 @@ Configurations that are included in Pommerman. This is the `config_id` parameter
 
 * `PommeFFACompetition-v0` - In this all agents are against each other  
 * `PommeTeamCompetition-v0` - In this teams of two agents each are set against each other. The teams are [Agent0, Agent2] and [Agent1, Agent3]  
+* `OneVsOne-v0` - In this two agents are against each other  
 * `PommeFFA-v1` - In this all agents are against each other while the board collapses uniformly by replacing the outermost square with walls  
 * `PommeTeamCompetition-v1` - This is similar to PommeFFA-v1 but with Teams instead of being Free-For-All  
 * `PommeRadio-v2` - This is similar to `PommeTeamCompetition-v0` but the agents can send a list of two integers in the range [1, 8] to their teammates on every turn.
@@ -25,10 +26,10 @@ Agent classes that are included in Pommerman. This is the `agent_list` parameter
 
 It has the following format:
 
-* Board: The 11x11 board is a numpy array where each value corresponds to one of the representations below. 
+* Board: The 11x11 board is a numpy array where each value corresponds to one of the representations below. The first element in this 2D array corresponds to the configuration of topmost row of the board and so on.
     * Passage = 0
-    * Rigid Wall = 1
-    * Wooden Wall = 2
+    * Wooden Wall = 1
+    * Rigid Wall = 2
     * Bomb = 3
     * Flames = 4
     * Fog = 5: This is only applicable in the partially observed (2v2 Team Radio) setting.
@@ -48,4 +49,6 @@ It has the following format:
 * Enemies: A list of three Ints, each in [9, 13]. Which agents are this agent's enemies. There are three here to be amenable to all variants of the game. When there are only two enemies like in the team competitions, the last Int will be the AgentDummy to reflect the fact that there are only two enemies.
 * Bomb Blast Strength: An 11x11 numpy int array representing the bombs' blast strengths in the agent's view. Everything outside of its view will be fogged out.
 * Bomb Life: An 11x11 numpy int array representing the bombs' life in the agent's view. Everything outside of its view will be fogged out.
+* Bomb Movement Direction: An 11x11 numpy int array representing the bombs' movement direction (in terms of an agent's action space: 1 -> up, 2 -> down etc...) in the agent's view. Everything outside of its view will be fogged out.
+* Flame Life: An 11x11 numpy int array representing the flames' life in the agent's view. Everything outside of its view will be fogged out.
 * Message: (Team Radio only) A list of two Ints, each in [0, 8]. The message being relayed from the teammate. Both ints are zero when a teammate is dead or it's the first step. Otherwise they are in [1, 8].

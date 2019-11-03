@@ -45,3 +45,7 @@ We welcome contributions through pull request. See [CONTRIBUTING](../master/CONT
 # Code of Conduct
 
 We strive for an open community. Please read over our [CODE OF CONDUCT](../master/CODE_OF_CONDUCT.md)
+
+# Citation
+
+If you use the Pommerman environment in your research, please cite us using the [bibtex file](../master/docs/pommerman.bib) in docs.

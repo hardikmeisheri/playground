@@ -485,8 +485,8 @@ class ForwardModel(object):
 
         return curr_board, curr_agents, curr_bombs, curr_items, curr_flames
 
-    def get_observations(self, curr_board, agents, bombs,
-                         is_partially_observable, agent_view_size, 
+    def get_observations(self, curr_board, agents, bombs, flames,
+                         is_partially_observable, agent_view_size,
                          game_type, game_env):
         """Gets the observations as an np.array of the visible squares.
 
@@ -499,6 +499,7 @@ class ForwardModel(object):
             ''' Makes an array of an agents bombs and the bombs attributes '''
             blast_strengths = np.zeros((board_size, board_size))
             life = np.zeros((board_size, board_size))
+            moving_direction = np.zeros((board_size, board_size))
 
             for bomb in bombs:
                 x, y = bomb.position
@@ -506,7 +507,23 @@ class ForwardModel(object):
                    or in_view_range(position, x, y):
                     blast_strengths[(x, y)] = bomb.blast_strength
                     life[(x, y)] = bomb.life
-            return blast_strengths, life
+                    if bomb.moving_direction is not None:
+                        moving_direction[(x, y)] = bomb.moving_direction.value
+            return blast_strengths, life, moving_direction
+
+        def make_flame_map(position):
+            ''' Makes an array of an agents flame life'''
+            life = np.zeros((board_size, board_size))
+
+            for flame in flames:
+                x, y = flame.position
+                if not is_partially_observable \
+                   or in_view_range(position, x, y):
+                    # +1 needed because flame removal check is done
+                    # before flame is ticked down, i.e. flame life
+                    # in environment is 2 -> 1 -> 0 -> dead
+                    life[(x, y)] = flame.life + 1
+            return life
 
         def in_view_range(position, v_row, v_col):
             '''Checks to see if a tile is in an agents viewing area'''
@@ -537,9 +554,12 @@ class ForwardModel(object):
                         if not in_view_range(agent.position, row, col):
                             board[row, col] = constants.Item.Fog.value
             agent_obs['board'] = board
-            bomb_blast_strengths, bomb_life = make_bomb_maps(agent.position)
+            bomb_blast_strengths, bomb_life, bomb_moving_direction = make_bomb_maps(agent.position)
             agent_obs['bomb_blast_strength'] = bomb_blast_strengths
             agent_obs['bomb_life'] = bomb_life
+            agent_obs['bomb_moving_direction'] = bomb_moving_direction
+            flame_life = make_flame_map(agent.position)
+            agent_obs['flame_life'] = flame_life
             agent_obs['game_type'] = game_type.value
             agent_obs['game_env'] = game_env
 
@@ -556,7 +576,7 @@ class ForwardModel(object):
         alive_ids = sorted([agent.agent_id for agent in alive])
         if step_count >= max_steps:
             return True
-        elif game_type == constants.GameType.FFA:
+        elif game_type == constants.GameType.FFA or game_type == constants.GameType.OneVsOne:
             if training_agent is not None and training_agent not in alive_ids:
                 return True
             return len(alive) <= 1
@@ -570,7 +590,7 @@ class ForwardModel(object):
 
     @staticmethod
     def get_info(done, rewards, game_type, agents):
-        if game_type == constants.GameType.FFA:
+        if game_type == constants.GameType.FFA or game_type == constants.GameType.OneVsOne:
             alive = [agent for agent in agents if agent.is_alive]
             if done:
                 if len(alive) != 1:
@@ -625,6 +645,16 @@ class ForwardModel(object):
             else:
                 # Game running: 0 for alive, -1 for dead.
                 return [int(agent.is_alive) - 1 for agent in agents]
+        elif game_type == constants.GameType.OneVsOne:
+            if len(alive_agents) == 1:
+                # An agent won. Give them +1, the other -1.
+                return [2 * int(agent.is_alive) - 1 for agent in agents]
+            elif step_count >= max_steps:
+                # Game is over from time. Everyone gets -1.
+                return [-1] * 2
+            else:
+                # Game running
+                return [0, 0]
         else:
             # We are playing a team game.
             if any_lst_equal(alive_agents, [[0, 2], [0], [2]]):
