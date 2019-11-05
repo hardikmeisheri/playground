@@ -13,5 +13,5 @@ ENV NAME Agent
 
 # Run app.py when the container launches
 WORKDIR /agent
-ENTRYPOINT ["python"]
+ENTRYPOINT ["python3.6"]
 CMD ["run.py"]

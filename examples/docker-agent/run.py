@@ -2,12 +2,13 @@
 
 from pommerman import agents
 from pommerman.runner import DockerAgentRunner
-
+import tensorflow as tf
 
 class MyAgent_with_comm(DockerAgentRunner):
 
     def __init__(self):
-        self._agent = agents.RL_Agent()
+        sess = tf.Session()
+        self._agent = agents.RL_Agent(sess)
 
     def init_agent(self, id, game_type):
         return self._agent.init_agent(id, game_type)
